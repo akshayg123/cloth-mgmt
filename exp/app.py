@@ -219,13 +219,27 @@ def view_fcombination():
     return render_template('view_fcombination.html', fshirt=fshirt, fpant=fpant)
 
 
+id_column_names = {
+    'male_shirts': 'mshirt_id',
+    'male_pants': 'mpant_id',
+    'female_shirts': 'fshirt_id',
+    'female_pants': 'fpant_id'
+}
+
+
+
 @app.route('/remove_bg', methods=['GET', 'POST'])
 def remove_bg():
     if request.method == 'POST':
         image_id = request.form['image_id']
         table_name = request.form['table_name']
+        id_column_name = id_column_names.get(table_name)
+        if not id_column_name:
+            return 'Invalid table name.'
+        
         cur = mysql.connection.cursor()
-        cur.execute(f"SELECT image_url_l FROM {table_name} WHERE id = %s", [image_id])
+        cur.execute(f"SELECT image_url_l FROM {table_name} WHERE {id_column_name} = %s", [image_id])
+
         result = cur.fetchone()
         if result is None:
             return 'No image found with the provided ID.'
@@ -236,7 +250,7 @@ def remove_bg():
             'https://api.remove.bg/v1.0/removebg',
             files={'image_file': open(image_path, 'rb')},
             data={'size': 'auto'},
-            headers={'X-Api-Key': 'INSERT-YOUR-API-KEY-HERE'},
+            headers={'X-Api-Key': 'uw7F6SbTMiSBbA9EYECDxHkY'},
         )
         if response.status_code == requests.codes.ok:
             with open('static/no-bg.png', 'wb') as out:
